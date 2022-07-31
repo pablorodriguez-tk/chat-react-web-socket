@@ -1,9 +1,50 @@
+import { useContext, useState } from "react";
+import { AuthContext } from "../auth/AuthContext";
+import { ChatContext } from "../context/chat/ChatContext";
+import { SocketContext } from "../context/SocketContext";
+
 export const SendMessage = () => {
+  const [mensaje, setMensaje] = useState("");
+  const { socket } = useContext(SocketContext);
+  const { auth } = useContext(AuthContext);
+  const { chatState } = useContext(ChatContext);
+
+  const onChange = ({ target }) => {
+    setMensaje(target.value);
+  };
+
+  const onSubmit = (ev) => {
+    ev.preventDefault();
+    if (mensaje.trim().length === 0) return;
+
+    setMensaje("");
+
+    //TODO: emitir un evento de sockets para enviar el mensaje
+    // {
+    //   de://UID del usuarios enviando el mensaje
+    //   para://UID del usuario que recibe el mensaje
+    //   mensaje: // Lo que quiero enviar,
+    // }
+    socket.emit("mensaje-personal", {
+      de: auth.uid,
+      para: chatState.chatActivo,
+      mensaje,
+    });
+
+    //TODO: hacer el dispatch del mensaje
+  };
+
   return (
-    <form>
+    <form onSubmit={onSubmit}>
       <div className="type_msg row">
         <div className="input_msg_write col-sm-9">
-          <input type="text" className="write_msg" placeholder="Mensaje..." />
+          <input
+            type="text"
+            className="write_msg"
+            placeholder="Mensaje..."
+            value={mensaje}
+            onChange={onChange}
+          />
         </div>
         <div className="col-sm-3 text-center">
           <button className="msg_send_btn mt-3" type="submit">
